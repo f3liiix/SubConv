@@ -4,7 +4,7 @@
             <div class="header">
                 <a href="https://github.com/SubConv/SubConv">
                 <span>
-                    SubConv
+                    Clash 订阅转换
                 </span>
                 <span>
                     <i class="fa-brands fa-github"></i>
