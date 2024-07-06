@@ -41,28 +41,6 @@
                 </el-form-item>
             </el-form>
         </el-card>
-        <div class="footer">
-            <div>
-                <span>
-                    <i class="fa fa-link" aria-hidden="true"></i>
-                    API 后端项目:
-                </span>
-                <span>
-                    <a href="https://github.com/SubConv/SubConv" target="_blank">
-                        SubConv
-                    </a>
-                </span>
-            </div>
-            <div>
-                <span>
-                    <i class="fa fa-pencil" aria-hidden="true"></i>
-                    UI designed by
-                </span>
-                <span>
-                    <a href="https://github.com/musanico" target="_blank">@Musanico</a>
-                </span>
-            </div>
-        </div>
     </div>
 </template>
 
