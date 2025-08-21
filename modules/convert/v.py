@@ -5,7 +5,7 @@ from modules.convert.util import get, RandUserAgent
 
 def handleVShareLink(names: dict, url: urlparse.ParseResult, scheme: str, proxy: dict):
     query = dict(urlparse.parse_qsl(url.query))
-    proxy["name"] = uniqueName(names, urlparse.unquote(url.fragment))
+    proxy["name"] = uniqueName(names, urlparse.unquote_plus(url.fragment))
     if url.hostname == "":
         raise
     if url.port == "":
@@ -75,7 +75,6 @@ def handleVShareLink(names: dict, url: urlparse.ParseResult, scheme: str, proxy:
             proxy["http-opts"] = httpOpts
 
     elif network == "http":
-        headers = {}
         h2Opts = {}
         h2Opts["path"] = "/"
         path = get(query.get("path"))
@@ -83,8 +82,7 @@ def handleVShareLink(names: dict, url: urlparse.ParseResult, scheme: str, proxy:
             h2Opts["path"] = str(path)
         host = get(query.get("host"))
         if host != "":
-            h2Opts["host"] = str(host)
-        h2Opts["headers"] = headers
+            h2Opts["host"] = [str(host)]
         proxy["h2-opts"] = h2Opts
     
     elif network == "ws":

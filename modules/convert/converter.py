@@ -17,7 +17,7 @@ import distutils.util
 async def ConvertsV2Ray(buf):
 
     try:
-        data = base64.b64decode(buf).decode("utf-8")
+        data = base64RawStdDecode(buf)
     except:
         try:
             data = buf.decode("utf-8")
@@ -46,7 +46,7 @@ async def ConvertsV2Ray(buf):
                 continue
 
             query = dict(urlparse.parse_qsl(urlHysteria.query))
-            name = uniqueName(names, urlparse.unquote(urlHysteria.fragment))
+            name = uniqueName(names, urlparse.unquote_plus(urlHysteria.fragment))
             hysteria = {}
 
             hysteria["name"] = name
@@ -80,7 +80,7 @@ async def ConvertsV2Ray(buf):
                 continue
 
             query = dict(urlparse.parse_qsl(urlHysteria2.query))
-            name = uniqueName(names, urlparse.unquote(urlHysteria2.fragment))
+            name = uniqueName(names, urlparse.unquote_plus(urlHysteria2.fragment))
             hysteria2 = {}
 
             hysteria2["name"] = name
@@ -129,7 +129,7 @@ async def ConvertsV2Ray(buf):
 
             tuic = {}
             tuic["name"] = uniqueName(
-                names, urlparse.unquote(urlTUIC.fragment))
+                names, urlparse.unquote_plus(urlTUIC.fragment))
             tuic["type"] = scheme
             tuic["server"] = urlTUIC.hostname
             tuic["port"] = urlTUIC.port
@@ -164,14 +164,14 @@ async def ConvertsV2Ray(buf):
 
             query = dict(urlparse.parse_qsl(urlTrojan.query))
 
-            name = uniqueName(names, urlparse.unquote(urlTrojan.fragment))
+            name = uniqueName(names, urlparse.unquote_plus(urlTrojan.fragment))
             trojan = {}
 
             trojan["name"] = name
             trojan["type"] = scheme
             trojan["server"] = urlTrojan.hostname
             trojan["port"] = urlTrojan.port
-            trojan["password"] = urlTrojan.password
+            trojan["password"] = urlTrojan.username
             trojan["udp"] = True
             trojan["skip-cert-verify"] = bool(
                 distutils.util.strtobool(query.get("allowInsecure")))
@@ -232,7 +232,7 @@ async def ConvertsV2Ray(buf):
 
         elif scheme == "vmess":
             try:
-                dcBuf = base64.b64decode(body)
+                dcBuf = base64RawStdDecode(body)
             except:
                 # Xray VMessAEAD share link
                 try:
@@ -321,13 +321,11 @@ async def ConvertsV2Ray(buf):
                 vmess["http-opts"] = httpOpts
 
             elif network == "h2":
-                headers = {}
                 h2Opts = {}
                 host = get(values.get("host"))
                 if host != "":
-                    headers["Host"] = host
+                    h2Opts["host"] = [host]
                 h2Opts["path"] = get(values.get("path"))
-                h2Opts["headers"] = headers
 
                 vmess["h2-opts"] = h2Opts
 
@@ -358,7 +356,7 @@ async def ConvertsV2Ray(buf):
             except:
                 continue
 
-            name = uniqueName(names, urlparse.unquote(urlSS.fragment))
+            name = uniqueName(names, urlparse.unquote_plus(urlSS.fragment))
             port = urlSS.port
 
             if port == "":

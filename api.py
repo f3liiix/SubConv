@@ -11,7 +11,7 @@ import httpx
 
 import yaml
 
-from urllib.parse import urlencode, unquote
+from urllib.parse import urlencode
 import argparse
 from pathlib import Path
 import re
@@ -66,6 +66,7 @@ FastAPI App
 from modules import pack
 from modules import parse
 from modules.convert import converter
+from modules import config
 
 
 def length(sth):
@@ -96,7 +97,7 @@ async def provider(request: Request):
     headers = {'Content-Type': 'text/yaml;charset=utf-8'}
     url = request.query_params.get("url")
     async with httpx.AsyncClient() as client:
-        resp = await client.get(url, headers={'User-Agent':request.headers['User-Agent']})
+        resp = await client.get(url, headers={'User-Agent': 'v2rayn'})
         if resp.status_code < 200 or resp.status_code >= 400:
             raise HTTPException(status_code=resp.status_code, detail=resp.text)
         result = await parse.parseSubs(resp.text)
@@ -165,13 +166,13 @@ async def sub(request: Request):
         headers = {'Content-Type': 'text/yaml;charset=utf-8'}
         # if there's only one subscription, return userinfo
         if length(url) == 1:
-            resp = await client.head(url[0], headers={'User-Agent':request.headers['User-Agent']})
+            resp = await client.head(url[0], headers={'User-Agent': request.headers['User-Agent']})
             if resp.status_code < 200 or resp.status_code >= 400:
                 raise HTTPException(status_code=resp.status_code, detail=resp.text)
             elif resp.status_code >= 300 and resp.status_code < 400:
                 while resp.status_code >= 300 and resp.status_code < 400:
                     url[0] = resp.headers['Location']
-                    resp = await client.head(url[0], headers={'User-Agent':request.headers['User-Agent']})
+                    resp = await client.head(url[0], headers={'User-Agent': request.headers['User-Agent']})
                     if resp.status_code < 200 or resp.status_code >= 400:
                         raise HTTPException(status_code=resp.status_code, detail=resp.text)
             originalHeaders = resp.headers
@@ -184,7 +185,7 @@ async def sub(request: Request):
         if url is not None:
             for i in range(len(url)):
                 # the test of response
-                respText = (await client.get(url[i], headers={'User-Agent':request.headers['User-Agent']})).text
+                respText = (await client.get(url[i], headers={'User-Agent': 'v2rayn'})).text
                 content.append(await parse.parseSubs(respText))
                 url[i] = "{}provider?{}".format(request.base_url, urlencode({"url": url[i]}))
     if len(content) == 0:
@@ -202,6 +203,14 @@ async def sub(request: Request):
 # proxy
 @app.get("/proxy")
 async def proxy(request: Request, url: str):
+    # check if url is in whitelist
+    is_whitelisted = False
+    for rule in config.configInstance.RULESET:
+        if rule[1] == url:
+            is_whitelisted = True
+            break
+    if not is_whitelisted:
+        raise HTTPException(status_code=403, detail="Forbidden: URL not in whitelist")
     # file was big so use stream
     async def stream():
         async with httpx.AsyncClient() as client:
